@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchShopkeeperOrders, updateOrderStatus } from "../../../../../../api/Orders";
-import { FiLoader, FiPackage } from "react-icons/fi";
+import { FiLoader, FiPackage, FiEye } from "react-icons/fi";
 
 /**
  * ShopkeeperOrderList.jsx
@@ -56,6 +56,7 @@ export default function OrderListEnhanced() {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(5);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [viewOrder, setViewOrder] = useState(null);
 
   // Fetch orders from API
   const { data, isLoading, isError, error } = useQuery({
@@ -228,59 +229,72 @@ export default function OrderListEnhanced() {
 
         {pageData.map((o) => {
           const nextAction = getNextAction(o.status);
+          // prepare item name preview
+          const itemNames = o.items?.map(i => i.product_name || i.product?.name || i.name).slice(0, 3).join(', ') || "No items";
+          const moreItems = o.items?.length > 3 ? ` +${o.items.length - 3} more` : "";
+
           return (
-            <motion.div key={o.order_id} variants={listItem} whileHover={{ y: -4 }} className="bg-white rounded-lg shadow p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              {/* left section */}
-              <div className="flex items-start gap-4 min-w-0">
-                <div className="flex-shrink-0 w-36">
-                  <div className="text-xs text-gray-400">Order</div>
-                  <div className="font-medium">#{o.order_id}</div>
-                  <div className="text-xs text-gray-400">{formatDate(o.created_at)}</div>
-                </div>
-
-                <div className="min-w-0">
-                  <div className="font-semibold truncate">{o.customer_name || "Unknown Customer"}</div>
-                  <div className="text-sm text-gray-500">
-                    Items: {o.items?.length || 0} • {o.payment_method?.toUpperCase()}
+            <motion.div key={o.order_id} variants={listItem} whileHover={{ y: -4 }} className="bg-white rounded-lg shadow p-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                {/* left section */}
+                <div className="flex items-start gap-4 min-w-0 flex-1">
+                  <div className="shrink-0 w-28">
+                    <div className="text-xs text-gray-400">Order</div>
+                    <div className="font-medium">#{o.order_id}</div>
+                    <div className="text-xs text-gray-400">{formatDate(o.created_at)}</div>
                   </div>
-                  {o.customer_address && (
-                    <div className="text-sm text-gray-400 mt-1 truncate">{o.customer_address}</div>
-                  )}
-                </div>
-              </div>
 
-              {/* right section */}
-              <div className="flex items-center gap-4">
-                <div className={`px-3 py-1 rounded-full text-sm font-medium ring-1 ${STATUS_STYLE[o.status?.toLowerCase()] || "bg-gray-50 text-gray-800 ring-gray-100"}`}>
-                  {o.status}
-                </div>
-
-                <div className="text-right min-w-[96px]">
-                  <div className="text-lg font-semibold">Rs {o.total_amount?.toFixed(2)}</div>
-                  <div className="text-xs text-gray-400">Total</div>
-                  {o.amount_due > 0 && (
-                    <div className="text-xs text-red-500">Due: Rs {o.amount_due?.toFixed(2)}</div>
-                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold truncate">{o.customer_name || "Unknown Customer"}</div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      <span className="font-medium">{o.items?.length || 0} items:</span> {itemNames}{moreItems}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      {o.payment_method?.toUpperCase()}
+                      {o.customer_address && ` • ${o.customer_address}`}
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  {nextAction && (
+                {/* right section */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className={`px-3 py-1 rounded-full text-sm font-medium ring-1 ${STATUS_STYLE[o.status?.toLowerCase()] || "bg-gray-50 text-gray-800 ring-gray-100"}`}>
+                    {o.status}
+                  </div>
+
+                  <div className="text-right min-w-24">
+                    <div className="text-lg font-semibold">Rs {o.total_amount?.toFixed(2)}</div>
+                    {o.amount_due > 0 && (
+                      <div className="text-xs text-red-500">Due: Rs {o.amount_due?.toFixed(2)}</div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
                     <button
-                      onClick={() => handleAction(o.order_id, nextAction.action)}
-                      className={`px-3 py-1 text-sm ${nextAction.color} text-white rounded-md hover:brightness-95`}
+                      onClick={() => setViewOrder(o)}
+                      className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 flex items-center gap-1"
                     >
-                      {nextAction.label}
+                      <FiEye className="w-3 h-3" /> View
                     </button>
-                  )}
 
-                  {o.status?.toLowerCase() !== "cancelled" && o.status?.toLowerCase() !== "completed" && (
-                    <button
-                      onClick={() => handleAction(o.order_id, "cancel")}
-                      className="px-3 py-1 text-sm border rounded-md text-red-600 hover:bg-red-50"
-                    >
-                      Cancel
-                    </button>
-                  )}
+                    {nextAction && (
+                      <button
+                        onClick={() => handleAction(o.order_id, nextAction.action)}
+                        className={`px-3 py-1 text-sm ${nextAction.color} text-white rounded-md hover:brightness-95`}
+                      >
+                        {nextAction.label}
+                      </button>
+                    )}
+
+                    {o.status?.toLowerCase() !== "cancelled" && o.status?.toLowerCase() !== "completed" && (
+                      <button
+                        onClick={() => handleAction(o.order_id, "cancel")}
+                        className="px-3 py-1 text-sm border rounded-md text-red-600 hover:bg-red-50"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -331,6 +345,59 @@ export default function OrderListEnhanced() {
           </div>
         </div>
       )}
+      
+        {/* view order modal */}
+        {viewOrder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <div className="absolute inset-0 bg-black/40" onClick={() => setViewOrder(null)} />
+            <div className="relative bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 overflow-y-auto max-h-[85vh]">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-lg font-semibold">Order #{viewOrder.order_id}</h3>
+                  <div className="text-sm text-gray-500">{formatDate(viewOrder.created_at)}</div>
+                </div>
+                <div className={`px-3 py-1 rounded-full text-sm font-medium ${STATUS_STYLE[viewOrder.status?.toLowerCase()] || 'bg-gray-50 text-gray-800'}`}>
+                  {viewOrder.status}
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium">Customer</h4>
+                  <div className="text-sm">{viewOrder.customer_name}</div>
+                  <div className="text-sm text-gray-500">{viewOrder.customer_address}</div>
+                  {viewOrder.customer_phone && <div className="text-sm">{viewOrder.customer_phone}</div>}
+                </div>
+
+                <div>
+                  <h4 className="font-medium">Payment</h4>
+                  <div className="text-sm">Method: {viewOrder.payment_method}</div>
+                  <div className="text-sm">Total: Rs {viewOrder.total_amount?.toFixed(2)}</div>
+                  {viewOrder.amount_due > 0 && <div className="text-sm text-red-600">Due: Rs {viewOrder.amount_due?.toFixed(2)}</div>}
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <h4 className="font-medium mb-2">Items</h4>
+                <div className="space-y-2">
+                  {viewOrder.items?.map((it, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-2 border rounded">
+                      <div className="min-w-0">
+                        <div className="font-medium truncate">{it.product_name || it.product?.name || it.name}</div>
+                        <div className="text-xs text-gray-500">Rs {it.unit_price ?? it.price ?? it.product?.selling_price} x {it.quantity}</div>
+                      </div>
+                      <div className="text-sm font-medium">Rs {((it.unit_price ?? it.price ?? it.product?.selling_price) * (it.quantity || 1)).toFixed(2)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 flex justify-end gap-2">
+                <button onClick={() => setViewOrder(null)} className="px-4 py-2 border rounded">Close</button>
+              </div>
+            </div>
+          </div>
+        )}
 
       {/* confirm modal */}
       {confirmAction && (

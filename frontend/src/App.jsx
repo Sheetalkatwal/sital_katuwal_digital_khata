@@ -29,6 +29,7 @@ import SettingPage from './pages/protectedpages/dashboard/userdashboard/pages/se
 import ProfilePage from './pages/protectedpages/dashboard/userdashboard/pages/profile/ProfilePage.jsx'
 import ReportPage from './pages/protectedpages/dashboard/shopkeeperdashboard/pages/report/ReportPage.jsx'
 import CustomerPage from './pages/protectedpages/dashboard/shopkeeperdashboard/pages/customer/CustomerPage.jsx'
+import SalesPage from './pages/protectedpages/dashboard/shopkeeperdashboard/pages/SalesPage.jsx'
 import About from './pages/protectedpages/aboutpage/About.jsx'
 import Contact from './pages/protectedpages/contactpage/Contact.jsx'
 import EsewaSuccess from './pages/protectedpages/dashboard/userdashboard/pages/orders/esewa-sucess/EsewaSuccess.jsx'
@@ -59,6 +60,7 @@ function App() {
           <Route path="products" element={<ManageProduct />} />
           <Route path="requests" element={<ManageRequests />} />
           <Route path="orders" element={<ManageOrder/>}/>
+          <Route path="sales" element={<SalesPage/>} />
           <Route path="reports" element={<ReportPage/>}/>
           <Route path="customers" element={<CustomerPage/>}/>
           

@@ -3,12 +3,12 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 import api from '../../../../../api/axios'
 
 const menuItems = [
-    
     { name: 'Dashboard', link: '/dashboard/shopkeeper' },
     { name: 'Products', link: '/dashboard/shopkeeper/products' },
     { name: 'Orders', link: '/dashboard/shopkeeper/orders' },
+    { name: 'Sales', link: '/dashboard/shopkeeper/sales' },
     { name: 'Customers', link: '/dashboard/shopkeeper/customers' },
-    {name:"Requests", link:"/dashboard/shopkeeper/requests"},
+    { name: 'Requests', link: '/dashboard/shopkeeper/requests' },
     { name: 'Reports', link: '/dashboard/shopkeeper/reports' },
     { name: 'Settings', link: '/dashboard/shopkeeper/settings' },
 ]
