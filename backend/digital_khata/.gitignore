@@ -1,0 +1,5 @@
+db.sqlite3
+templates
+product_images
+media
+.env
